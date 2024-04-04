@@ -28,7 +28,7 @@ import jakarta.servlet.http.HttpServletRequest;
 
 @RestController
 @RequestMapping("/auth")
-@CrossOrigin("*")
+@CrossOrigin(origins ={"http://localhost:5500","https://revisor.projectgallery.online"})
 public class AuthController {
 	@Autowired
 	private UserDetailsService userDetailsService;
@@ -52,10 +52,14 @@ public class AuthController {
 
 	@PostMapping("/login")
 	public ResponseEntity<JwtResponse> login(@RequestBody JwtRequest request) {
+		logger.info("inside login method");
 
 		this.doAuthenticate(request.getEmail(), request.getPassword());
+		
+		logger.info("after authentication");
 
 		UserDetails userDetails = userDetailsService.loadUserByUsername(request.getEmail());
+		logger.info(userDetails.toString());
 		String token = this.helper.generateToken(userDetails);
 
 		JwtResponse response = JwtResponse.builder().token(token).username(userDetails.getUsername()).build();
@@ -78,7 +82,9 @@ public class AuthController {
 
 		UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(email, password);
 		try {
+			logger.info("inside try");
 			manager.authenticate(authentication);
+			logger.info("after auth");
 
 		} catch (BadCredentialsException e) {
 			throw new BadCredentialsException(" Invalid Username or Password  !!");
