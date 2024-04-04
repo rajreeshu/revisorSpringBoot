@@ -25,7 +25,7 @@ public class WebSecurityConfig {
         		.cors(cors->cors.disable())
                 .authorizeHttpRequests(
                 		auth->
-                			auth.requestMatchers("/auth/login","/auth/signup").permitAll()
+                			auth.requestMatchers("/auth/login","/auth/signup","/").permitAll()
                 			.requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
                 			.anyRequest().authenticated()
                 		)
