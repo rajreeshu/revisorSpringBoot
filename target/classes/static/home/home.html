@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Revision-Home</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+</head>
+<body style="margin:0px; padding:0px;">
+	
+	 <div id="header-component"></div>
+     <div id="body-component"></div>
+    <div id="footer-component"></div>  
+   
+    <script src="/config.js"></script> 
+    <!-- <script  type="module" src="../ModularLibrary/ModularLibrary.js"></script> -->
+ 
+    <script type="module">
+        console.log(BASE_URL);
+        import { ModularLibrary } from 'http://modularfrontend.projectgallery.online/ModularLibrary.js';
+        const modularLibraryHeader = new ModularLibrary('abc','#header-component');
+        modularLibraryHeader.loadAndModifyComponent(BASE_URL+'/header/header.html');
+        modularLibraryHeader.modifyExternalStylesheet('https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css');
+        modularLibraryHeader.modifyExternalStylesheet('https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css');
+        modularLibraryHeader.modifyExternalStylesheet(BASE_URL+'/header/header.css');
+        
+
+        const modularLibrary = new ModularLibrary('abc', '#body-component');
+        modularLibrary.loadAndModifyComponent(BASE_URL+'/home/body.html');
+        modularLibrary.modifyExternalStylesheet('https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css');
+        modularLibrary.modifyExternalStylesheet('https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css');
+        modularLibrary.modifyExternalStylesheet(BASE_URL+'/home/body.css');
+ 
+        // const modularLibrary2 = new ModularLibrary('123');
+        // modularLibrary2.loadAndModifyComponent(BASE_URL+'components/footer.html', '#footer-component');
+        // modularLibrary2.modifyExternalStylesheet('https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css');
+	
+</script>  
+</body>
+</html>

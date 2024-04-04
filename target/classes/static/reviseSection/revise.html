@@ -1,0 +1,308 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="UTF-8">
+    <title>Revise</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <style>
+        .emoji-container_abc:hover .static-emoji_abc {
+            opacity: 0;       
+        }
+
+        .emoji-container_abc:hover .animated-emoji_abc {
+            opacity: 1;
+        } 
+
+        .progress_abc.active_abc::before {
+            animation: 5s linear 0s 1 normal forwards running progress;
+        }
+
+        .toast_abc .progress_abc::before {
+            content: "";
+            position: absolute;
+            bottom: 0px;
+            right: 0px;
+            height: 100%;
+            width: 100%;
+            background-color: rgb(39, 112, 255);
+        }
+
+        .toast_abc .close_abc:hover {
+            opacity: 1;
+        }
+    </style>
+</head>
+
+<body style="margin:0px; padding:0px;">
+    <div id="header-component"></div>
+    <div id="body-component"></div>
+    <div id="footer-component"></div>
+
+    <script src="/config.js"></script>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+    <script type="module">
+        import { ModularLibrary } from 'http://modularfrontend.projectgallery.online/ModularLibrary.js';
+
+        const headerModularLibrary = new ModularLibrary('123', '#header-component');
+        // headerModularLibrary.loadAndModifyComponent(BASE_URL+'/header/header.html');
+        headerModularLibrary.modifyExternalStylesheet(BASE_URL + '/header/header.css');
+        // 
+        function checkAndModifyContent() {
+
+            document.getElementById('homeLogo').setAttribute('href', BASE_URL);
+        }
+        headerModularLibrary.loadComponentAndModify(BASE_URL + '/header/header.html', checkAndModifyContent);
+
+        const modularLibrary = new ModularLibrary('abc', '#body-component');
+        modularLibrary.modifyExternalStylesheet('https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css');
+        modularLibrary.modifyExternalStylesheet('https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css');
+        modularLibrary.modifyExternalStylesheet('https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css');
+
+        modularLibrary.modifyExternalStylesheet(BASE_URL + '/reviseSection/body.css');
+        modularLibrary.loadComponentAndModify(BASE_URL + '/reviseSection/body.html', loadProgress);
+
+
+    </script>
+
+    <script>
+        var userId = 2;
+        // Function to update progress bars
+        function updateLeetcodeStyleProgressBar(easyCount, mediumCount, hardCount) {
+            var totalCount = easyCount + mediumCount + hardCount;
+
+            var easyWidth = (easyCount / totalCount) * 100;
+            var mediumWidth = (mediumCount / totalCount) * 100;
+            var hardWidth = (hardCount / totalCount) * 100;
+
+            document.getElementById('leetcodeEasyProgress').style.width = easyWidth + '%';
+            document.getElementById('leetcodeMediumProgress').style.width = mediumWidth + '%';
+            document.getElementById('leetcodeHardProgress').style.width = hardWidth + '%';
+
+            // Update text
+            document.getElementById('easyCountText').innerText = easyCount;
+            document.getElementById('mediumCountText').innerText = mediumCount;
+            document.getElementById('hardCountText').innerText = hardCount;
+        }
+
+        // Function to show the modal
+        function showModal() {
+
+            openRandomQuestionModal();
+
+            // var modal = document.getElementById("questionModal");
+            // modal.style.display = "block";
+        }
+
+        function addQuestionModal() {
+            document.getElementById("addQuestionModal").style.display = "block";
+        }
+
+        // Function to close the modal
+        function closeModal() {
+            document.getElementById("questionModal").style.display = "none";
+            document.getElementById("solutionMaster").style.display = 'none';
+
+        }
+
+        function closeAddQuestionModal() {
+            document.getElementById("addQuestionModal").style.display = "none";
+        }
+
+        // Function to toggle password visibility
+        function toggleAnswerVisibility() {
+            var solution = document.getElementById("solutionMaster");
+            console.log(solution.style.display);
+            solution.style.display = solution.style.display === 'none' ? 'block' : 'none';
+        }
+
+        function loadProgress(mutationsList, observer) {
+            console.log('Checking progress');
+
+            // Perform the update only if specific conditions are met
+            if (document.getElementById('leetcodeEasyProgress') &&
+                document.getElementById('leetcodeMediumProgress') &&
+                document.getElementById('leetcodeHardProgress')) {
+
+
+
+                // updateLeetcodeStyleProgressBar(que[0], que[1], que[2]);
+                fetchQuestionCounts(userId);
+                console.log("inside Load Progress")
+
+                // Add event listener to Start button, if not already added
+                document.querySelector('.start_abc').addEventListener('click', showModal);
+                document.querySelector('#addQuestion').addEventListener('click', addQuestionModal);
+
+                return true; // Return true to disconnect the observer
+            }
+            return false; // Return false to keep observing
+        }
+
+
+        function saveQuestion() {
+            var questionTitle = document.getElementById('questionTitle').value;
+            var questionDescription = document.getElementById('questionInput').value;
+            var solution = document.getElementById('solutionInput').value;
+
+            var questionData = {
+                title: questionTitle,
+                description: questionDescription,
+                solution: solution,
+                category: "leetcode",
+                label: "HARD"
+            };
+
+            // Username and password (replace with actual credentials or obtain them securely)
+            var username = 'root';
+            var password = '1234';
+
+            // Base64 encode the credentials
+            var encodedCredentials = btoa(username + ':' + password);
+
+            fetch(BASE_URL + '/questions/add', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': 'Basic ' + encodedCredentials
+                },
+                body: JSON.stringify(questionData)
+            })
+                .then(response => {
+                    if (!response.ok) {
+                        console.error('Error status:', response.status);
+                        return response.text().then(text => { throw new Error(text) });
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    console.log('Question saved successfully', data);
+                    closeAddQuestionModal();
+                    showToastAlert("Saved", "Question saved successfully.", "Success");
+                    document.getElementById('questionTitle').value = "";
+                    document.getElementById('questionInput').value = "";
+                    document.getElementById('solutionInput').value = "";
+                })
+                .catch(error => {
+                    console.error('Error saving question:', error);
+                });
+        }
+        let randomQuestionNo = 0;
+        function openRandomQuestionModal() {
+            fetch(BASE_URL + '/questions/random-question')
+                .then(response => response.json())
+                .then(data => {
+                    console.log(data);
+                    randomQuestionNo = data.id;
+                    document.getElementById('questionText').innerText = data.title; // Assuming 'title' is a field of your Question object
+                    document.getElementById('solution').innerText = data.solution; // Assuming 'solution' is a field of your Question object
+                    document.getElementById('showQuestionDescription').innerText = data.description;
+                    document.getElementById('questionModal').style.display = 'block'; // Show the modal
+                })
+                .catch(error => console.error('Error fetching question:', error));
+        }
+
+        function updateQuestionLabel(newLabel) {
+            fetch(BASE_URL + `/questions/updateLabel/${randomQuestionNo}`, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(newLabel),
+            })
+                .then(response => response.text())
+                .then(data => {
+                    console.log(data); // Handle the response data
+                    fetchQuestionCounts(userId)
+                    showToastAlert("Updated","Question Status Successfully Updated","Success");
+                })
+                .catch((error) => {
+                    console.error('Error:', error);
+                });
+        }
+
+        function fetchQuestionCounts(userId) { 
+			
+            // URL of the endpoint
+            const url = BASE_URL+`/questions/count/${userId}`; 
+            console.log("inside fetchQUestionCount " ,url)
+
+            fetch(url)
+                .then(response => {
+                    // Check if the response is successful
+                    if (!response.ok) {
+                        throw new Error(`HTTP error! Status: ${response.status}`);
+                    }
+                    console.log(response);
+                    return response.json();
+                })
+                .then(data => {
+                    // Handle the data (the counts)
+                    console.log('Question counts:', data);
+
+                    updateLeetcodeStyleProgressBar(data['EASY'], data['MEDIUM'], data['HARD']);
+
+                    // You can update the DOM or perform other actions with the data here
+                    // For example:
+                    // document.getElementById('easyCount').textContent = data['EASY'] || 0;
+                    // document.getElementById('mediumCount').textContent = data['MEDIUM'] || 0;
+                    // document.getElementById('hardCount').textContent = data['HARD'] || 0;
+                })
+                .catch(error => { 
+                    // Handle any errors
+                    console.error('Fetching question counts failed:', error);
+                }); 
+                console.log("after fetch");
+        }
+
+
+        // document.getElementsByClassName("emoji-container").addEventListener("click",()=>{
+        //     console.log(this.getAttribute("data-label"));
+        // });
+
+        // document.addEventListener('DOMContentLoaded', function () {
+        //     var emojiContainers = document.querySelectorAll('.emoji-container');
+
+        //     emojiContainers.forEach(function (container) {
+        //         // container.addEventListener('click', function () {
+        //             var label = this.getAttribute('data-label');
+        //             console.log(label);
+        //             // updateQuestionLabel(randomQuestionNo,label);
+        //         // });
+        //     });
+        // });
+
+        function showToastAlert(heading, text, type) {
+            progress = document.querySelector(".progress_abc");
+            let timer1 = 0, timer2 = 0;
+
+            document.querySelector("#alertHeading").innerHTML = heading;
+            document.querySelector("#alertText").innerHTML = text;
+
+            $(".toast_abc").fadeIn("slow");
+            progress.style.width = "0%";
+
+            timer1 = setTimeout(() => {
+                $(".toast_abc").fadeOut();
+
+            }, 4000); //1s = 1000 milliseconds
+
+            timer2 = setTimeout(() => {
+                progress.style.width = "100%";
+            }, 5200);
+        }
+
+        function closeAlertToast() {
+            console.log("close click")
+            progress = document.querySelector(".progress_abc");
+            $(".toast_abc").hide();
+            progress.style.width = "100%";
+        }
+
+
+    </script>
+
+</body>
+
+</html>
