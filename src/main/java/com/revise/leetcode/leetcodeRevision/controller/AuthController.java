@@ -28,7 +28,7 @@ import jakarta.servlet.http.HttpServletRequest;
 
 @RestController
 @RequestMapping("/auth")
-@CrossOrigin(origins="*")
+//@CrossOrigin(origins="*")
 //@CrossOrigin(origins ={"http://localhost:5500","https://revisor.projectgallery.online"})
 public class AuthController {
 	@Autowired
