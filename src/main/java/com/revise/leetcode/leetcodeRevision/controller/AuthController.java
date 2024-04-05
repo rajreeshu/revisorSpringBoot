@@ -52,19 +52,22 @@ public class AuthController {
 	private Logger logger = LoggerFactory.getLogger(AuthController.class);
 
 	@PostMapping("/login")
-	public ResponseEntity<JwtResponse> login(@RequestBody JwtRequest request) {
-		logger.info("inside login method");
+	public ResponseEntity<?> login(@RequestBody JwtRequest request) {
+		 try {
+		        this.doAuthenticate(request.getEmail(), request.getPassword());
 
-		this.doAuthenticate(request.getEmail(), request.getPassword());
-		
-		logger.info("after authentication");
+		        logger.info("after authentication");
 
-		UserDetails userDetails = userDetailsService.loadUserByUsername(request.getEmail());
-		logger.info(userDetails.toString());
-		String token = this.helper.generateToken(userDetails);
+		        UserDetails userDetails = userDetailsService.loadUserByUsername(request.getEmail());
+		        logger.info(userDetails.toString());
+		        String token = this.helper.generateToken(userDetails);
 
-		JwtResponse response = JwtResponse.builder().token(token).username(userDetails.getUsername()).build();
-		return new ResponseEntity<>(response, HttpStatus.OK);
+		        JwtResponse response = JwtResponse.builder().token(token).username(userDetails.getUsername()).build();
+//		        return new ResponseEntity<>(response, HttpStatus.OK);
+		        return ResponseEntity.ok(response);
+		    } catch (Exception e) {
+		        return new ResponseEntity<>("Incorrect password provided",HttpStatus.UNAUTHORIZED);
+		    }
 	}
 	
 	@PostMapping("/signup")
