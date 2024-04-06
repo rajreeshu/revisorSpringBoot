@@ -25,11 +25,10 @@ import com.revise.leetcode.leetcodeRevision.dto.UserDto;
 import com.revise.leetcode.leetcodeRevision.service.UserService;
 
 import jakarta.servlet.http.HttpServletRequest;
+import jakarta.validation.Valid;
 
 @RestController
 @RequestMapping("/auth")
-//@CrossOrigin(origins="*")
-//@CrossOrigin(origins ={"http://localhost:5500","https://revisor.projectgallery.online"})
 public class AuthController {
 	@Autowired
 	private UserDetailsService userDetailsService;
@@ -52,7 +51,7 @@ public class AuthController {
 	private Logger logger = LoggerFactory.getLogger(AuthController.class);
 
 	@PostMapping("/login")
-	public ResponseEntity<?> login(@RequestBody JwtRequest request) {
+	public ResponseEntity<?> login(@Valid @RequestBody JwtRequest request) {
 		 try {
 		        this.doAuthenticate(request.getEmail(), request.getPassword());
 
@@ -66,12 +65,12 @@ public class AuthController {
 //		        return new ResponseEntity<>(response, HttpStatus.OK);
 		        return ResponseEntity.ok(response);
 		    } catch (Exception e) {
-		        return new ResponseEntity<>("Incorrect password provided",HttpStatus.UNAUTHORIZED);
+		        throw new BadCredentialsException(e.getMessage());
 		    }
 	}
 	
 	@PostMapping("/signup")
-	public ResponseEntity<JwtResponse> signup(@RequestBody UserDto userDto) {
+	public ResponseEntity<JwtResponse> signup(@Valid @RequestBody UserDto userDto) {
 		userDto.setPassword(passwordEncoder.encode(userDto.getPassword()));
 		UserDto newUser = userService.addUser(userDto);
 		
@@ -90,16 +89,16 @@ public class AuthController {
 			manager.authenticate(authentication);
 			logger.info("after auth");
 
-		} catch (BadCredentialsException e) {
+		} catch (Exception e) {
 			throw new BadCredentialsException(" Invalid Username or Password  !!");
 		}
 
 	}
 	
-	@ExceptionHandler(BadCredentialsException.class)
-    public String exceptionHandler() {
-        return "Credentials Invalid !!";
-    }
+//	@ExceptionHandler(BadCredentialsException.class)
+//    public String exceptionHandler() {
+//        return "Credentials Invalid !!";
+//    }
 	
 	
 

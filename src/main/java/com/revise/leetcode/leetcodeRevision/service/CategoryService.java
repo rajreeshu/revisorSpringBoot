@@ -4,6 +4,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.crossstore.ChangeSetPersister.NotFoundException;
 import org.springframework.stereotype.Service;
 
 import com.revise.leetcode.leetcodeRevision.dto.CategoryDto;
@@ -34,6 +35,17 @@ public class CategoryService {
                 .map(this::convertToDto)
                 .collect(Collectors.toList());
     }
+	
+	public Boolean deleteCategory(Long categoryId, String userEmail) throws NotFoundException{
+		// TODO Auto-generated method stub
+		User user = userRepository.getUserByEmail(userEmail);
+		Category categoryEntity = categoryRepository.findByIdAndUserEntity_Email(categoryId, userEmail).get(0);
+		 if (null==categoryEntity) {
+	            throw new NotFoundException();
+	        }
+		 categoryRepository.deleteById(categoryId);
+		return true;
+	}
     
     
     
@@ -56,6 +68,8 @@ public class CategoryService {
 	    category.setUserEntity(user);
 	    return category;
 	}
+
+
 
 
 }

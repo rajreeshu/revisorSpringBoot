@@ -3,6 +3,7 @@ package com.revise.leetcode.leetcodeRevision.service;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import com.revise.leetcode.leetcodeRevision.Exceptions.CustomUserAlreadyExistsException;
 import com.revise.leetcode.leetcodeRevision.dto.UserDto;
 import com.revise.leetcode.leetcodeRevision.entity.User;
 import com.revise.leetcode.leetcodeRevision.repository.UserRepository;
@@ -18,7 +19,13 @@ public class UserService {
     public UserDto addUser(UserDto userDto) {
         // Convert DTO to entity
 //    	userDto.setPassword(passwordEncoder.encode(userDto.getPassword()));
-        User savedUser = userRepository.save(convertToEntity(userDto));
+    	User existingUser = userRepository.getUserByEmail(userDto.getEmail());
+        if (null!=existingUser) {
+            // Throw a custom exception or a predefined exception
+            throw new CustomUserAlreadyExistsException("A user with the email " + userDto.getEmail() + " already exists.");
+        }
+    	
+    	User savedUser = userRepository.save(convertToEntity(userDto));
         
         // Convert saved entity back to DTO
         return convertToDto(savedUser);
