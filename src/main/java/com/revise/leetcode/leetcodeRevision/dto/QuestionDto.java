@@ -10,7 +10,7 @@ public class QuestionDto {
     private String title;
     private String description;
     private String solution;
-    private String category;
+    private Long categoryId;
     private Difficulty label;
     private Long userId;
 

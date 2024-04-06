@@ -5,12 +5,14 @@ import java.util.Map;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.CrossOrigin;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -27,11 +29,10 @@ import com.revise.leetcode.leetcodeRevision.service.UserService;
 
 @RestController
 @RequestMapping("/questions")
-@CrossOrigin("*")
 public class QuestionController {
 
 	@Autowired
-	private QuestionService questionService;
+	private QuestionService questionService; 
 	
 	Logger logger = LoggerFactory.getLogger(getClass());
 	
@@ -48,18 +49,18 @@ public class QuestionController {
 		return ResponseEntity.ok(savedQuestionDTO);
 	}
 
-	@GetMapping("/random-question/{category}")
-	public ResponseEntity<QuestionDto> getRandomQuestion(@PathVariable String category) {
+	@GetMapping("/random-question/{categoryId}")
+	public ResponseEntity<QuestionDto> getRandomQuestion(@PathVariable long categoryId) {
 		Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 		User principal = (User) authentication.getPrincipal();
 		String userEmail = principal.getUsername();
 		
-		return ResponseEntity.ok(questionService.getRandomQuestion(userEmail,category)); // Implement this method to return a random
+		return ResponseEntity.ok(questionService.getRandomQuestion(userEmail,categoryId)); // Implement this method to return a random
 																		// question
 	}
 
 	@PutMapping("/updateLabel/{id}")
-	public ResponseEntity<String> updateQuestionLabel(@PathVariable Long id, @RequestBody Difficulty newLabel) {
+	public ResponseEntity<String> updateQuestionLabel(@PathVariable long id, @RequestBody Difficulty newLabel) {
 		try {
 			questionService.updateQuestionLabel(id, newLabel);
 			return ResponseEntity.ok("Label updated successfully");
@@ -68,9 +69,9 @@ public class QuestionController {
 		}
 	}
 	
-	@GetMapping("/count/{category}")
-	public ResponseEntity<Map<String, Integer>> getQuestionCounts(@PathVariable String category) {
-		logger.warn(category);
+	@GetMapping("/count/{categoryId}")
+	public ResponseEntity<Map<String, Integer>> getQuestionCounts(@PathVariable long categoryId) {
+//		logger.warn(categoryId.to);
 		
 		Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 		User principal = (User) authentication.getPrincipal();
@@ -78,7 +79,7 @@ public class QuestionController {
 		
 		logger.warn("UserEmail:"+userEmail);
 		
-		Map<String, Integer> counts = questionService.getCountByDifficulty(userEmail,category);
+		Map<String, Integer> counts = questionService.getCountByDifficulty(userEmail,categoryId);
 
 	    // Check if the counts map is not empty or null
 	    if (counts != null && !counts.isEmpty()) {
@@ -87,6 +88,25 @@ public class QuestionController {
 	        return ResponseEntity.notFound().build(); // Return 404 Not Found
 	    }
 	}
+	
+	@DeleteMapping("/{questionId}")
+    public ResponseEntity<String> deleteQuestion(@PathVariable long questionId) {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        User principal = (User) authentication.getPrincipal();
+        String userEmail = principal.getUsername();
+
+        try {
+            boolean isDeleted = questionService.deleteQuestion(questionId, userEmail);
+            if (isDeleted) {
+                return ResponseEntity.ok("Question deleted successfully");
+            } else {
+                return ResponseEntity.notFound().build(); // If the question was not found or not deleted
+            }
+        } catch (Exception e) {
+            logger.error("Error deleting question: ", e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error deleting question: " + e.getMessage());
+        }
+    }
 
 
 }

@@ -8,6 +8,7 @@ import java.util.concurrent.ThreadLocalRandom;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.revise.leetcode.leetcodeRevision.domains.EntityDomains.Difficulty;
 import com.revise.leetcode.leetcodeRevision.dto.QuestionDto;
@@ -39,11 +40,11 @@ public class QuestionService {
 		return convertToDto(question);
 	}
 
-	public QuestionDto getRandomQuestion(String userEmail, String category) {
+	public QuestionDto getRandomQuestion(String userEmail, long categoryId) {
 		
 		User userEntity = userRepository.getUserByEmail(userEmail);
 		long userId = userEntity.getId();
-		Category categoryEntity = categoryRepository.findByUserEntityAndCategory(userEntity,category).get(0);
+		Category categoryEntity = categoryRepository.findByIdAndUserEntity(categoryId,userEntity).get(0);
 		
 		List<Question> questions = new ArrayList<>();
 		questions.addAll(questionRepository.findRandomQuestionsByLabelAndCategory("HARD", 4,userId, categoryEntity.getId()));
@@ -58,7 +59,7 @@ public class QuestionService {
 		return convertToDto(questions.get(randomIndex));
 	}
 	
-    public void updateQuestionLabel(Long questionId, Difficulty newLabel) throws Exception {
+    public void updateQuestionLabel(long questionId, Difficulty newLabel) throws Exception {
         Question question = questionRepository.findById(questionId)
                 .orElseThrow(() -> new Exception("Question not found with id: " + questionId));
         
@@ -66,9 +67,9 @@ public class QuestionService {
         questionRepository.save(question);
     }
     
-    public Map<String, Integer> getCountByDifficulty(String userEmail, String category) {
+    public Map<String, Integer> getCountByDifficulty(String userEmail, long categoryId) {
         User user = userRepository.getUserByEmail(userEmail);
-        List<Category> categoryList =  categoryRepository.findByUserEntityAndCategory(user, category);
+        List<Category> categoryList =  categoryRepository.findByIdAndUserEntity(categoryId,user);
         Map<String, Integer> countMap = new HashMap<>();
         for (Difficulty difficulty : Difficulty.values()) {
             countMap.put(difficulty.name(), questionRepository.countByUserAndLabelAndCategory(user, difficulty, categoryList.get(0)));
@@ -78,7 +79,7 @@ public class QuestionService {
 
 	// Business methods for questions
 
-	private QuestionDto convertToDto(Question question) {
+	public QuestionDto convertToDto(Question question) {
 		QuestionDto dto = new QuestionDto();
 		dto.setId(question.getId());
 		dto.setTitle(question.getTitle());
@@ -88,10 +89,10 @@ public class QuestionService {
 		return dto;
 	}
 
-	private Question convertToEntity(QuestionDto dto) {
+	public Question convertToEntity(QuestionDto dto) {
 		Question question = new Question();
 		User userEntity = userRepository.findById(dto.getUserId()).get();
-		Category categoryEntity = categoryRepository.findByUserEntityAndCategory(userEntity,dto.getCategory()).get(0);
+		Category categoryEntity = categoryRepository.findByIdAndUserEntity(dto.getCategoryId(),userEntity).get(0);
 		question.setId(dto.getId());
 		question.setTitle(dto.getTitle());
 		question.setDescription(dto.getDescription());
@@ -101,4 +102,15 @@ public class QuestionService {
 		question.setCategory(categoryEntity);
 		return question;
 	}
+
+	@Transactional
+    public boolean deleteQuestion(long questionId, String userEmail) {
+//		User user = 
+		Question question = questionRepository.findByIdAndUser_Email(questionId, userEmail).get(0);
+        if (question != null) {
+            questionRepository.delete(question);
+            return true;
+        }
+        return false;
+    }
 }

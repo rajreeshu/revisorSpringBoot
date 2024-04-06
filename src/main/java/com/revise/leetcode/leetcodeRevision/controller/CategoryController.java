@@ -64,4 +64,24 @@ public class CategoryController {
             throw e;
         }
     }
+	
+	 @GetMapping("/{categoryId}")
+	    public ResponseEntity<CategoryDto> getCategoryById(@PathVariable Long categoryId) {
+	        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+	        User principal = (User) authentication.getPrincipal();
+	        String userEmail = principal.getUsername();
+
+	        try {
+	            CategoryDto category = categoryService.getCategoryByIdAndUserEmail(categoryId, userEmail);
+	            if (category == null) {
+	                return ResponseEntity.notFound().build();
+	            }
+	            return ResponseEntity.ok(category);
+	        } catch (Exception e) {
+	            logger.error("Error fetching category details: ", e);
+	            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
+	        }
+	    }
+	
+	
 }

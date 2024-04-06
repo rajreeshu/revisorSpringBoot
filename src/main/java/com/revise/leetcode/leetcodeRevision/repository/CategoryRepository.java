@@ -10,7 +10,7 @@ import com.revise.leetcode.leetcodeRevision.entity.User;
 public interface CategoryRepository extends JpaRepository<Category, Long>{
 	List<Category> findByUserEntityEmail(String email);
 	
-	List<Category> findByUserEntityAndCategory(User user, String category);
+	List<Category> findByIdAndUserEntity(Long id, User user);
 	
 	List<Category> findByIdAndUserEntity_Email(Long id, String email);
 }

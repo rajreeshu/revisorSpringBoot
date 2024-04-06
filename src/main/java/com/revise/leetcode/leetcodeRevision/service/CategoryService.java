@@ -1,6 +1,7 @@
 package com.revise.leetcode.leetcodeRevision.service;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -8,9 +9,11 @@ import org.springframework.data.crossstore.ChangeSetPersister.NotFoundException;
 import org.springframework.stereotype.Service;
 
 import com.revise.leetcode.leetcodeRevision.dto.CategoryDto;
+import com.revise.leetcode.leetcodeRevision.dto.QuestionDto;
 import com.revise.leetcode.leetcodeRevision.entity.Category;
 import com.revise.leetcode.leetcodeRevision.entity.User;
 import com.revise.leetcode.leetcodeRevision.repository.CategoryRepository;
+import com.revise.leetcode.leetcodeRevision.repository.QuestionRepository;
 import com.revise.leetcode.leetcodeRevision.repository.UserRepository;
 
 @Service
@@ -21,6 +24,9 @@ public class CategoryService {
 	
 	@Autowired
 	private UserRepository userRepository;
+	
+	@Autowired
+	private QuestionService questionService;
 	
 	public CategoryDto addCategory(CategoryDto categoryDTO, String userEmail) {
 		categoryDTO.setUserId(userRepository.getUserByEmail(userEmail).getId());
@@ -46,6 +52,12 @@ public class CategoryService {
 		 categoryRepository.deleteById(categoryId);
 		return true;
 	}
+	
+	public CategoryDto getCategoryByIdAndUserEmail(Long categoryId, String userEmail) {
+        Category category = categoryRepository.findByIdAndUserEntity_Email(categoryId, userEmail).get(0);
+        
+        return convertToDto(category);
+    }
     
     
     
@@ -56,6 +68,13 @@ public class CategoryService {
 	    categoryDTO.setId(category.getId());
 	    categoryDTO.setCategory(category.getCategory());
 	    categoryDTO.setUserId(category.getUserEntity().getId());
+	    
+	    List<QuestionDto> questionDto = category.getQuestions()
+	    								.stream()
+	    								.map(questionService::convertToDto)
+	    								.collect(Collectors.toList());
+	    categoryDTO.setQuestions(questionDto);
+	    		
 	    return categoryDTO;
 	}
 
