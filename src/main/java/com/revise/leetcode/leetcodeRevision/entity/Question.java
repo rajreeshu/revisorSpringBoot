@@ -40,5 +40,17 @@ public class Question {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id")
     private User user;
+    
+    @Override
+    public String toString() {
+        return "Question{" +
+                "id=" + id +
+                ", title='" + title + '\'' +
+                ", description='" + description + '\'' +
+                ", solution='" + solution + '\'' +
+                ", category=" + (category != null ? category.getId() : null) +
+                ", label=" + label +
+                '}';
+    }
 
 }

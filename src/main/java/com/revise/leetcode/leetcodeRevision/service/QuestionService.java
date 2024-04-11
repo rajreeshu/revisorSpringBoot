@@ -1,11 +1,14 @@
 package com.revise.leetcode.leetcodeRevision.service;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ThreadLocalRandom;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -29,6 +32,8 @@ public class QuestionService {
 	
 	@Autowired
 	private CategoryRepository categoryRepository;
+	
+	Logger logger = LoggerFactory.getLogger(getClass());
 
 	public QuestionDto saveQuestion(QuestionDto questionDTO, String userEmail) {
 		questionDTO.setUserId(userRepository.getUserByEmail(userEmail).getId());
@@ -54,6 +59,16 @@ public class QuestionService {
 		if (questions.isEmpty()) {
 			return null; // or handle this case as you see fit
 		}
+		
+		
+		
+		// Shuffle the combined list to mix difficulties randomly
+	    Collections.shuffle(questions);
+	    
+//	    logger.info("Question List: {}",questions);
+	    for(Question ques : questions) {
+	    	logger.info("Question: {}",ques.toString());
+	    }
 
 		int randomIndex = ThreadLocalRandom.current().nextInt(questions.size());
 		return convertToDto(questions.get(randomIndex));
