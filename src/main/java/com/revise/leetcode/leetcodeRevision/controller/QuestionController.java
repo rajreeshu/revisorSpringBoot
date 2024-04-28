@@ -1,6 +1,9 @@
 package com.revise.leetcode.leetcodeRevision.controller;
 
+import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -20,6 +23,7 @@ import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.client.RestTemplate;
 
 import com.revise.leetcode.leetcodeRevision.domains.EntityDomains.Difficulty;
 import com.revise.leetcode.leetcodeRevision.dto.QuestionDto;
@@ -36,6 +40,8 @@ public class QuestionController {
 	
 	Logger logger = LoggerFactory.getLogger(getClass());
 	
+	@Autowired
+	private RestTemplate restTemplate;
 	
 
 	@PostMapping("/add")
@@ -44,9 +50,36 @@ public class QuestionController {
 		Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 		User principal = (User) authentication.getPrincipal();
 		String userEmail = principal.getUsername();
-		
 		QuestionDto savedQuestionDTO = questionService.saveQuestion(questionDTO, userEmail);
 		return ResponseEntity.ok(savedQuestionDTO);
+	}
+	
+	@PostMapping("/checkAI")
+	public Object checkAI(@RequestBody QuestionDto questionDTO) {
+		logger.warn(questionDTO.toString());
+		Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+		User principal = (User) authentication.getPrincipal();
+		String userEmail = principal.getUsername();
+		
+		List<QuestionDto> allQuestions = questionService.questionsByUserAndCategory(userEmail, questionDTO.getCategoryId());
+		if(allQuestions.size()==0) return List.of();
+		
+//		List<String> questionTitleList = allQuestions.stream().map(QuestionDto::getTitle).collect(Collectors.toList());
+		List<String> questionDescriptionList = allQuestions.stream().map(QuestionDto::getDescription).collect(Collectors.toList());
+		
+		//Call Similarity API
+		String url = "http://textmirror.projectgallery.online/api/similarity";
+		Map<String, Object> request = new HashMap<>();
+		
+        request.put("old_data", questionDescriptionList);
+        request.put("new_data", List.of(questionDTO.getDescription()));
+        request.put("top_n", Math.min(5, allQuestions.size()));
+        
+        return restTemplate.postForObject(url, request, Object.class);
+		
+		
+//		QuestionDto savedQuestionDTO = questionService.saveQuestion(questionDTO, userEmail);
+//		return ResponseEntity.ok(savedQuestionDTO);
 	}
 
 	@GetMapping("/random-question/{categoryId}")

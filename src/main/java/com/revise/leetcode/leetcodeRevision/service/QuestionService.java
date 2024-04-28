@@ -6,6 +6,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ThreadLocalRandom;
+import java.util.stream.Collectors;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -43,6 +44,14 @@ public class QuestionService {
 		}
 		question = questionRepository.save(question);
 		return convertToDto(question);
+	}
+	
+	public List<QuestionDto> questionsByUserAndCategory(String userEmail, Long categoryId){
+		User user = userRepository.getUserByEmail(userEmail);
+		Category category = categoryRepository.findById(categoryId).get();
+		
+		List<Question> questionByUser = questionRepository.getQuestionByUserAndCategory(user, category);
+		return questionByUser.stream().map(this::convertToDto).collect(Collectors.toList());
 	}
 
 	public QuestionDto getRandomQuestion(String userEmail, long categoryId) {

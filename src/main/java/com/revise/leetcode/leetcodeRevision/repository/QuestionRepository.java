@@ -20,5 +20,7 @@ public interface QuestionRepository extends JpaRepository<Question, Long> {
 	int countByUserAndLabelAndCategory(User user, Difficulty difficulty, Category category);
 	
 	List<Question> findByIdAndUser_Email(Long id, String userEmail);
+
+	List<Question> getQuestionByUserAndCategory(User user, Category category);
 	
 }
