@@ -1,9 +1,16 @@
 package com.revise.leetcode.leetcodeRevision.entity;
 
+import java.time.LocalDateTime;
+
+import org.springframework.data.annotation.CreatedDate;
+import org.springframework.data.annotation.LastModifiedDate;
+import org.springframework.data.jpa.domain.support.AuditingEntityListener;
+
 import com.revise.leetcode.leetcodeRevision.domains.EntityDomains.Difficulty;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EntityListeners;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
 import jakarta.persistence.FetchType;
@@ -17,6 +24,7 @@ import lombok.Data;
 
 @Entity
 @Data
+@EntityListeners(AuditingEntityListener.class)
 public class Question {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -40,6 +48,12 @@ public class Question {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id")
     private User user;
+    
+    @CreatedDate
+    private LocalDateTime createdDate;
+    
+    @LastModifiedDate
+    private LocalDateTime modifiedDate;
     
     @Override
     public String toString() {

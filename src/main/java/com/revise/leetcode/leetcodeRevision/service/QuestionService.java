@@ -1,5 +1,6 @@
 package com.revise.leetcode.leetcodeRevision.service;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -61,11 +62,21 @@ public class QuestionService {
 		Category categoryEntity = categoryRepository.findByIdAndUserEntity(categoryId,userEntity).get(0);
 		
 		List<Question> questions = new ArrayList<>();
-		questions.addAll(questionRepository.findRandomQuestionsByLabelAndCategory("HARD", 4,userId, categoryEntity.getId()));
-		questions.addAll(questionRepository.findRandomQuestionsByLabelAndCategory("MEDIUM", 2,userId,  categoryEntity.getId()));
-		questions.addAll(questionRepository.findRandomQuestionsByLabelAndCategory("EASY", 1,userId, categoryEntity.getId()));
+		
+		//data last modified more than 1 month ago
+		questions.addAll(questionRepository.findRandomQuestionsByLabelAndCategory("HARD", 4,userId, categoryEntity.getId(), LocalDateTime.now().minusDays(30)));
+		questions.addAll(questionRepository.findRandomQuestionsByLabelAndCategory("MEDIUM", 2,userId,  categoryEntity.getId(), LocalDateTime.now().minusDays(30)));
+		questions.addAll(questionRepository.findRandomQuestionsByLabelAndCategory("EASY", 1,userId, categoryEntity.getId(), LocalDateTime.now().minusDays(30)));
+		
+		String[] quesDiff = new String[] {"HARD","MEDIUM","EASY"};
+		int count=0;
+		while(questions.size()<7 && count<7) {
+			questions.addAll(questionRepository.findRandomQuestionsByLabelAndCategory(quesDiff[count/3], 1,userId, categoryEntity.getId(), LocalDateTime.now()));
+			count++;
+		}
 
 		if (questions.isEmpty()) {
+			logger.info("null value found");
 			return null; // or handle this case as you see fit
 		}
 		

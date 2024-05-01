@@ -1,5 +1,6 @@
 package com.revise.leetcode.leetcodeRevision.repository;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -14,8 +15,8 @@ import com.revise.leetcode.leetcodeRevision.entity.User;
 @Repository
 public interface QuestionRepository extends JpaRepository<Question, Long> {
 	// Example using JPQL (adjust based on your database)
-	@Query(value = "SELECT * FROM question WHERE label = ?1 AND user_id=?3 AND category_id=?4  ORDER BY RAND()*RAND() LIMIT ?2", nativeQuery = true)
-    List<Question> findRandomQuestionsByLabelAndCategory(String label, int limit, long userId, long category);
+	@Query(value = "SELECT * FROM question WHERE label = ?1 AND user_id=?3 AND category_id=?4 AND  modified_date<=?5 ORDER BY RAND()*RAND() LIMIT ?2", nativeQuery = true)
+    List<Question> findRandomQuestionsByLabelAndCategory(String label, int limit, long userId, long category, LocalDateTime beforeDate);
 	
 	int countByUserAndLabelAndCategory(User user, Difficulty difficulty, Category category);
 	
